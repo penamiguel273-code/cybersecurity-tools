@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑 Generador de Contraseñas Seguras</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; font-size: 28px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; font-size: 14px; }
+        .password-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border: 2px solid #e9ecef;
+            min-height: 70px;
+        }
+        .password-display .password {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            letter-spacing: 1px;
+            word-break: break-all;
+            flex: 1;
+        }
+        .password-display .actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+        .password-display button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .password-display button:hover { background: #2980b9; transform: scale(1.05); }
+        .password-display button.copied { background: #27ae60; }
+        .controls {
+            display: grid;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .control-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .control-group input[type="range"] {
+            width: 150px;
+            accent-color: #3498db;
+        }
+        .control-group input[type="number"] {
+            width: 60px;
+            padding: 5px 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .checkboxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .checkbox-item:hover { background: #e9ecef; }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3498db;
+            cursor: pointer;
+        }
+        .checkbox-item label {
+            font-size: 14px;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+        .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
+        .strength-meter {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        .strength-meter .bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .strength-meter .fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s, background 0.5s;
+        }
+        .strength-meter .info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        .strength-meter .info .level { font-weight: 700; }
+        .history {
+            margin-top: 25px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 20px;
+        }
+        .history h3 { color: #2c3e50; font-size: 16px; margin-bottom: 10px; }
+        .history-list {
+            max-height: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .history-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item .date { font-size: 11px; color: #7f8c8d; }
+        @media (max-width: 500px) {
+            .container { padding: 20px; }
+            .checkboxes { grid-template-columns: 1fr; }
+            .password-display { flex-direction: column; gap: 10px; }
+            .password-display .actions { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Generador de Contraseñas</h1>
+        <p class="subtitle">Crea contraseñas seguras y personalizables</p>
+
+        <div class="password-display">
+            <span class="password" id="passwordDisplay">haz clic en generar</span>
+            <div class="actions">
+                <button onclick="copyPassword()" id="copyBtn">📋</button>
+                <button onclick="generatePassword()">🔄</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Longitud: <span id="lengthDisplay">16</span></label>
+                <input type="range" id="lengthSlider" min="8" max="32" value="16" oninput="updateLength(this.value)">
+                <input type="number" id="lengthNumber" value="16" min="8" max="32" oninput="updateLengthFromNumber(this.value)">
+            </div>
+        </div>
+
+        <div class="checkboxes">
+            <div class="checkbox-item">
+                <input type="checkbox" id="uppercase" checked onchange="generatePassword()">
+                <label>Mayúsculas (A-Z)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="lowercase" checked onchange="generatePassword()">
+                <label>Minúsculas (a-z)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="numbers" checked onchange="generatePassword()">
+                <label>Números (0-9)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="symbols" checked onchange="generatePassword()">
+                <label>Símbolos (!@#$%^&*)</label>
+            </div>
+        </div>
+
+        <button class="generate-btn" onclick="generatePassword()">🎲 Generar Contraseña</button>
+
+        <div class="strength-meter">
+            <div class="info">
+                <span>Entropía</span>
+                <span class="level" id="strengthLevel">-</span>
+            </div>
+            <div class="bar">
+                <div class="fill" id="strengthFill" style="width:0%; background:#e74c3c;"></div>
+            </div>
+            <div class="info">
+                <span id="entropyDisplay">0 bits</span>
+                <span id="timeDisplay">-</span>
+            </div>
+        </div>
+
+        <div class="history">
+            <h3>📜 Últimas contraseñas generadas</h3>
+            <div class="history-list" id="historyList">
+                <div style="text-align:center; color:#bdc3c7; padding:15px;">No hay contraseñas generadas</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let passwordHistory = [];
+
+        function generatePassword() {
+            const length = parseInt(document.getElementById('lengthSlider').value);
+            const useUppercase = document.getElementById('uppercase').checked;
+            const useLowercase = document.getElementById('lowercase').checked;
+            const useNumbers = document.getElementById('numbers').checked;
+            const useSymbols = document.getElementById('symbols').checked;
+
+            let chars = '';
+            if (useLowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (useUppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (useNumbers) chars += '0123456789';
+            if (useSymbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+            if (chars.length === 0) {
+                alert('¡Selecciona al menos un tipo de caracter!');
+                return;
+            }
+
+            let password = '';
+            const array = new Uint32Array(length);
+            crypto.getRandomValues(array);
+            for (let i = 0; i < length; i++) {
+                password += chars[array[i] % chars.length];
+            }
+
+            document.getElementById('passwordDisplay').textContent = password;
+            updateStrength(password);
+            addToHistory(password);
+        }
+
+        function updateStrength(password) {
+            const charsetSize = getCharSetSize(password);
+            const entropy = Math.log2(Math.pow(charsetSize, password.length));
+            const bits = Math.round(entropy);
+            
+            document.getElementById('entropyDisplay').textContent = bits + ' bits';
+            
+            let level, color, percentage;
+            if (bits < 40) {
+                level = 'Débil';
+                color = '#e74c3c';
+                percentage = 25;
+            } else if (bits < 60) {
+                level = 'Media';
+                color = '#f39c12';
+                percentage = 50;
+            } else if (bits < 80) {
+                level = 'Fuerte';
+                color = '#27ae60';
+                percentage = 75;
+            } else {
+                level = 'Muy Fuerte';
+                color = '#1abc9c';
+                percentage = 100;
+            }
+
+            document.getElementById('strengthLevel').textContent = level;
+            document.getElementById('strengthLevel').style.color = color;
+            document.getElementById('strengthFill').style.width = percentage + '%';
+            document.getElementById('strengthFill').style.background = color;
+
+            // Tiempo de cracking
+            const seconds = Math.pow(2, bits) / 1000000000;
+            let timeDisplay;
+            if (seconds < 1) timeDisplay = 'Menos de 1 segundo';
+            else if (seconds < 60) timeDisplay = Math.round(seconds) + ' segundos';
+            else if (seconds < 3600) timeDisplay = Math.round(seconds/60) + ' minutos';
+            else if (seconds < 86400) timeDisplay = Math.round(seconds/3600) + ' horas';
+            else if (seconds < 31536000) timeDisplay = Math.round(seconds/86400) + ' días';
+            else timeDisplay = Math.round(seconds/31536000) + ' años';
+            
+            document.getElementById('timeDisplay').textContent = '⏱️ ' + timeDisplay;
+        }
+
+        function getCharSetSize(password) {
+            let size = 0;
+            if (/[a-z]/.test(password)) size += 26;
+            if (/[A-Z]/.test(password)) size += 26;
+            if (/[0-9]/.test(password)) size += 10;
+            if (/[^a-zA-Z0-9]/.test(password)) size += 33;
+            return size || 1;
+        }
+
+        function copyPassword() {
+            const password = document.getElementById('passwordDisplay').textContent;
+            if (password === 'haz clic en generar') return;
+            
+            navigator.clipboard.writeText(password).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '✅';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function addToHistory(password) {
+            passwordHistory.unshift({
+                password: password,
+                date: new Date().toLocaleTimeString()
+            });
+            if (passwordHistory.length > 10) passwordHistory.pop();
+            
+            const list = document.getElementById('historyList');
+            list.innerHTML = passwordHistory.map(item => `
+                <div class="history-item">
+                    <span>${item.password}</span>
+                    <span class="date">${item.date}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateLength(value) {
+            document.getElementById('lengthDisplay').textContent = value;
+            document.getElementById('lengthNumber').value = value;
+            generatePassword();
+        }
+
+        function updateLengthFromNumber(value) {
+            let val = parseInt(value);
+            if (val < 8) val = 8;
+            if (val > 32) val = 32;
+            document.getElementById('lengthSlider').value = val;
+            document.getElementById('lengthDisplay').textContent = val;
+            generatePassword();
+        }
+
+        // Generar contraseña inicial
+        window.onload = generatePassword;
+    </script>
+</body>
+</html>
